@@ -157,15 +157,15 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
                 )
             }
 
-            // Record page view for rewards
+            // Record page view and per-page ad-block estimates for rewards.
+            // Uses fixed per-page estimates (matching AdBlockManager) instead of
+            // syncing from adBlockManager.stats, which includes incognito pages
+            // and resets to zero when the user clears stats.
             rewardsManager.recordPageView()
-
-            // Sync ad-block stats to rewards manager
-            let stats = adBlockManager.stats
-            let adsDelta = stats.adsBlocked - rewardsManager.totalAdsBlocked
-            let trackersDelta = stats.trackersBlocked - rewardsManager.totalTrackersBlocked
-            if adsDelta > 0 { rewardsManager.recordAdsBlocked(adsDelta) }
-            if trackersDelta > 0 { rewardsManager.recordTrackersBlocked(trackersDelta) }
+            if !adBlockManager.compiledRuleLists.isEmpty {
+                rewardsManager.recordAdsBlocked(8)
+                rewardsManager.recordTrackersBlocked(12)
+            }
         }
     }
 
