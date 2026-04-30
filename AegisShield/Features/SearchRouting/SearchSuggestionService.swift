@@ -83,7 +83,7 @@ final class SearchSuggestionService: ObservableObject {
             return "https://api.bing.com/osjson.aspx?query=\(encoded)&language=\(lang)"
 
         case "duckduckgo":
-            return "https://duckduckgo.com/ac/?q=\(encoded)&type=list"
+            return "https://duckduckgo.com/ac/?q=\(encoded)"
 
         case "yahoo":
             return "https://search.yahoo.com/sugg/gossip/gossip-us-ura/?command=\(encoded)&output=sd1&nresults=10"
@@ -97,8 +97,10 @@ final class SearchSuggestionService: ObservableObject {
         case "ecosia":
             return "https://ac.ecosia.org/?q=\(encoded)&type=list"
 
+        case "naver":
+            return "https://ac.search.naver.com/nx/ac?q=\(encoded)&con=1&frm=nv&ans=2&r_format=json&r_enc=UTF-8&q_enc=UTF-8"
+
         default:
-            // Fallback to Google suggestions
             return "https://suggestqueries.google.com/complete/search?client=firefox&q=\(encoded)&hl=\(lang)"
         }
     }
@@ -116,6 +118,11 @@ final class SearchSuggestionService: ObservableObject {
         // DuckDuckGo returns [{"phrase":"..."},...]
         if engine.id == "duckduckgo" {
             return parseDuckDuckGoSuggestions(data: data)
+        }
+
+        // Naver returns its own JSON format
+        if engine.id == "naver" {
+            return parseNaverSuggestions(data: data)
         }
 
         // OpenSearch format: ["query", ["s1", "s2", ...]]
@@ -138,6 +145,23 @@ final class SearchSuggestionService: ObservableObject {
             return parseOpenSearchSuggestions(data: data)
         }
         return Array(json.compactMap { $0["phrase"] }.prefix(8))
+    }
+
+    private func parseNaverSuggestions(data: Data) -> [String] {
+        // Naver format: {"items":[[["suggestion",...],...]]}
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let items = json["items"] as? [[[Any]]] else {
+            return parseOpenSearchSuggestions(data: data)
+        }
+        var results: [String] = []
+        for group in items {
+            for item in group {
+                if let text = item.first as? String {
+                    results.append(text)
+                }
+            }
+        }
+        return Array(results.prefix(8))
     }
 
     private func parseYahooSuggestions(data: Data) -> [String] {
