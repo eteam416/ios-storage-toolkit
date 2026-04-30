@@ -156,7 +156,7 @@ struct NotesView: View {
                 .padding(.top, AegisSpacing.sm)
 
                 // Associated page info
-                if let title = currentTitle ?? note?.associatedTitle {
+                if let title = (note != nil ? note?.associatedTitle : currentTitle) ?? currentTitle {
                     HStack {
                         Image(systemName: "link")
                             .font(.caption)
