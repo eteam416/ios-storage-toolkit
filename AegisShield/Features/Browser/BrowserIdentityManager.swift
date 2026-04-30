@@ -158,20 +158,34 @@ enum BrowserIdentityManager {
     /// Returns `true` when the given URL points to a known social-login or
     /// OAuth provider, so the navigation should be allowed through without
     /// ad-block interference.
+    /// Top-level domains of known OAuth providers where path-based
+    /// detection is appropriate.
+    private static let oauthProviderTLDs: Set<String> = [
+        "google.com", "googleapis.com", "youtube.com",
+        "facebook.com", "apple.com", "twitter.com", "x.com",
+        "microsoftonline.com", "live.com", "windows.net",
+        "github.com", "instagram.com", "tiktok.com",
+        "linkedin.com", "discord.com",
+    ]
+
     static func isSocialLoginURL(_ url: URL) -> Bool {
         guard let host = url.host?.lowercased() else { return false }
 
         // Direct domain match
         if socialLoginDomains.contains(host) { return true }
 
-        // OAuth callback patterns
-        let path = url.path.lowercased()
-        let oauthPaths = ["/oauth", "/authorize", "/login", "/signin",
-                          "/auth", "/connect", "/callback", "/consent"]
-        if oauthPaths.contains(where: { path.contains($0) }) {
-            return true
-        }
+        // Only apply path-based matching to known OAuth provider domains
+        let isKnownProvider = oauthProviderTLDs.contains(where: {
+            host == $0 || host.hasSuffix(".\($0)")
+        })
+        guard isKnownProvider else { return false }
 
-        return false
+        // Check path components (not substrings) for OAuth patterns
+        let pathComponents = url.pathComponents.map { $0.lowercased() }
+        let oauthPaths: Set<String> = [
+            "oauth", "oauth2", "authorize", "login", "signin",
+            "auth", "connect", "callback", "consent"
+        ]
+        return !pathComponents.isDisjoint(with: oauthPaths)
     }
 }
