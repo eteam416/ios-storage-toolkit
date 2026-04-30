@@ -122,9 +122,7 @@ struct SmartBarView: View {
     private var suggestionsDropdown: some View {
         VStack(spacing: 0) {
             ForEach(suggestionService.suggestions, id: \.self) { suggestion in
-                Button {
-                    submitQuery(suggestion)
-                } label: {
+                HStack(spacing: 0) {
                     HStack(spacing: AegisSpacing.sm) {
                         Image(systemName: "magnifyingglass")
                             .font(.caption)
@@ -137,19 +135,21 @@ struct SmartBarView: View {
                             .lineLimit(1)
 
                         Spacer()
-
-                        // Auto-fill button
-                        Button {
-                            editingText = suggestion
-                        } label: {
-                            Image(systemName: "arrow.up.left")
-                                .font(.caption2)
-                                .foregroundStyle(AegisColors.textTertiary)
-                        }
                     }
-                    .padding(.horizontal, AegisSpacing.md)
-                    .padding(.vertical, AegisSpacing.xs)
+                    .contentShape(Rectangle())
+                    .onTapGesture { submitQuery(suggestion) }
+
+                    Button {
+                        editingText = suggestion
+                    } label: {
+                        Image(systemName: "arrow.up.left")
+                            .font(.caption2)
+                            .foregroundStyle(AegisColors.textTertiary)
+                            .padding(.horizontal, AegisSpacing.sm)
+                    }
                 }
+                .padding(.horizontal, AegisSpacing.md)
+                .padding(.vertical, AegisSpacing.xs)
                 .accessibilityLabel(String(localized: "suggestion_label \(suggestion)"))
 
                 if suggestion != suggestionService.suggestions.last {
