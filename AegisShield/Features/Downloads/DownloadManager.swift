@@ -257,6 +257,10 @@ final class DownloadManager: NSObject, ObservableObject {
         if let task = downloadTasks.first(where: { $0.value.id == item.id })?.key {
             task.cancel()
             downloadTasks.removeValue(forKey: task)
+        } else if let entry = wkDownloadItems.first(where: { $0.value.id == item.id }) {
+            entry.key.cancel(nil)
+            wkDownloadItems.removeValue(forKey: entry.key)
+            wkDownloadDestinations.removeValue(forKey: entry.key)
         }
         item.status = .cancelled
         activeDownloadCount = max(0, activeDownloadCount - 1)
