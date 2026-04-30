@@ -214,27 +214,30 @@ struct MainBrowserView: View {
             }
         }
         .overlay {
-            if showBadgeUnlock, let badge = rewardsManager.newlyUnlockedBadge {
+            if showBadgeUnlock, let badge = rewardsManager.pendingBadgeNotifications.first {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .onTapGesture {
                         showBadgeUnlock = false
-                        rewardsManager.newlyUnlockedBadge = nil
+                        rewardsManager.consumeBadgeNotification()
                     }
 
                 BadgeUnlockOverlay(badge: badge) {
                     showBadgeUnlock = false
-                    rewardsManager.newlyUnlockedBadge = nil
+                    rewardsManager.consumeBadgeNotification()
                 }
                 .transition(.scale.combined(with: .opacity))
             }
         }
-        .onChange(of: rewardsManager.newlyUnlockedBadge) { _, newValue in
-            if newValue != nil {
+        .onChange(of: rewardsManager.pendingBadgeNotifications) { _, newValue in
+            if !newValue.isEmpty && !showBadgeUnlock {
                 withAnimation(.spring(response: 0.5)) {
                     showBadgeUnlock = true
                 }
             }
+        }
+        .task {
+            rewardsManager.recordInitialUsage()
         }
     }
 

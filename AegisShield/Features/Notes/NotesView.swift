@@ -141,9 +141,6 @@ struct NotesView: View {
                     ForEach(BrowsingNote.NoteColor.allCases, id: \.self) { color in
                         Button {
                             selectedColor = color
-                            if let note {
-                                notesManager.updateNoteColor(note, color: color)
-                            }
                         } label: {
                             Circle()
                                 .fill(color.swiftUIColor)
@@ -198,6 +195,7 @@ struct NotesView: View {
                     Button(String(localized: "save_button")) {
                         if let note {
                             notesManager.updateNote(note, content: newNoteContent)
+                            notesManager.updateNoteColor(note, color: selectedColor)
                         } else if !newNoteContent.isEmpty {
                             notesManager.addNote(
                                 content: newNoteContent,

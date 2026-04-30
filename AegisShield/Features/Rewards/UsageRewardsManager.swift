@@ -111,6 +111,11 @@ final class UsageRewardsManager: ObservableObject {
 
     init() {
         loadState()
+    }
+
+    /// Call from the view's .task modifier so badge notifications
+    /// fire after onChange handlers are registered.
+    func recordInitialUsage() {
         recordDailyUsage()
     }
 
@@ -166,7 +171,13 @@ final class UsageRewardsManager: ObservableObject {
 
     // MARK: - Badge Checking
 
-    @Published var newlyUnlockedBadge: Badge?
+    @Published var pendingBadgeNotifications: [Badge] = []
+
+    /// Pops the next badge from the notification queue.
+    func consumeBadgeNotification() {
+        guard !pendingBadgeNotifications.isEmpty else { return }
+        pendingBadgeNotifications.removeFirst()
+    }
 
     private func checkBadges() {
         var newBadges: [Badge] = []
@@ -210,7 +221,7 @@ final class UsageRewardsManager: ObservableObject {
 
         for badge in newBadges {
             unlockedBadges.insert(badge)
-            newlyUnlockedBadge = badge
+            pendingBadgeNotifications.append(badge)
         }
     }
 
