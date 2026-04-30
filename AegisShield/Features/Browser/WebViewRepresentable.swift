@@ -279,7 +279,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         let components = contentDisposition.components(separatedBy: ";")
         for component in components {
             let trimmed = component.trimmingCharacters(in: .whitespaces)
-            if trimmed.lowercased().hasPrefix("filename") {
+            if trimmed.lowercased().hasPrefix("filename=") {
                 let parts = trimmed.components(separatedBy: "=")
                 if parts.count >= 2 {
                     return parts.dropFirst().joined(separator: "=").trimmingCharacters(in: CharacterSet(charactersIn: "\"' "))

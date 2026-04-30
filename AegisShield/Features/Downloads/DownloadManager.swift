@@ -28,8 +28,8 @@ final class DownloadItem: ObservableObject, Identifiable {
     }
 
     var fileExtension: String {
-        URL(string: suggestedFilename)?.pathExtension.lowercased()
-            ?? url.pathExtension.lowercased()
+        let ext = (suggestedFilename as NSString).pathExtension.lowercased()
+        return ext.isEmpty ? url.pathExtension.lowercased() : ext
     }
 
     var fileType: FileType {
@@ -369,7 +369,12 @@ final class DownloadManager: NSObject, ObservableObject {
 
     /// Computes a unique file path in the downloads directory. Nonisolated so it
     /// can be called synchronously from URLSession delegate callbacks.
+    private static let filenameLock = NSLock()
+
     nonisolated static func computeUniqueFilename(for filename: String) -> URL {
+        filenameLock.lock()
+        defer { filenameLock.unlock() }
+
         var url = downloadsDirectory.appendingPathComponent(filename)
         var counter = 1
         let name = url.deletingPathExtension().lastPathComponent
@@ -380,6 +385,9 @@ final class DownloadManager: NSObject, ObservableObject {
             url = downloadsDirectory.appendingPathComponent(newName)
             counter += 1
         }
+
+        // Create a placeholder to reserve the path before releasing the lock
+        FileManager.default.createFile(atPath: url.path, contents: nil)
         return url
     }
 }
