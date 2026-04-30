@@ -193,13 +193,12 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             return
         }
 
-        // Check if URL is a downloadable file
+        // Check if URL is a downloadable file — convert to WKDownload
+        // to avoid a duplicate HTTP request (preserves cookies & signed URLs)
         let pathExtension = url.pathExtension.lowercased()
         if !pathExtension.isEmpty && Self.downloadExtensions.contains(pathExtension) {
-            Task { @MainActor in
-                downloadManager?.startDownload(url: url, suggestedFilename: url.lastPathComponent)
-            }
-            decisionHandler(.cancel)
+            pendingDownloadFilename = url.lastPathComponent
+            decisionHandler(.download)
             return
         }
 
