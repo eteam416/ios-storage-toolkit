@@ -1,10 +1,12 @@
 import SwiftUI
 
-/// Home screen with quick shortcuts and privacy dashboard.
+/// Home screen with quick shortcuts, most visited, and privacy dashboard.
 struct HomeView: View {
     @EnvironmentObject private var adBlockManager: AdBlockManager
     @EnvironmentObject private var languageManager: LanguageManager
     @EnvironmentObject private var searchEngineManager: SearchEngineManager
+    @EnvironmentObject private var historyManager: HistoryManager
+    @EnvironmentObject private var rewardsManager: UsageRewardsManager
     let onQuickLink: (String) -> Void
 
     private let columns = [
@@ -17,8 +19,18 @@ struct HomeView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AegisSpacing.lg) {
+                // Streak indicator
+                if rewardsManager.currentStreak > 0 {
+                    streakBanner
+                }
+
                 // Privacy Dashboard
                 privacyDashboard
+
+                // Most Visited Sites
+                if !historyManager.mostVisited().isEmpty {
+                    mostVisitedSection
+                }
 
                 // Quick Shortcuts
                 quickShortcuts
@@ -115,6 +127,86 @@ struct HomeView: View {
                 .foregroundStyle(AegisColors.brandAccent)
         }
         .padding(.top, AegisSpacing.sm)
+    }
+
+    // MARK: - Streak Banner
+
+    private var streakBanner: some View {
+        HStack(spacing: AegisSpacing.sm) {
+            Image(systemName: "flame.fill")
+                .font(.title2)
+                .foregroundStyle(rewardsManager.currentStreak >= 7 ? .orange : .yellow)
+                .symbolEffect(.bounce, value: rewardsManager.currentStreak)
+
+            VStack(alignment: .leading, spacing: AegisSpacing.xxxs) {
+                Text(String(localized: "streak_day_count \(rewardsManager.currentStreak)"))
+                    .font(AegisTypography.labelMedium)
+                    .foregroundStyle(AegisColors.textPrimary)
+
+                Text(rewardsManager.nextMilestone)
+                    .font(AegisTypography.captionSmall)
+                    .foregroundStyle(AegisColors.textTertiary)
+            }
+
+            Spacer()
+
+            // Mini progress ring
+            ZStack {
+                Circle()
+                    .stroke(AegisColors.inputBackground, lineWidth: 3)
+                    .frame(width: 32, height: 32)
+                Circle()
+                    .trim(from: 0, to: rewardsManager.progressToNextMilestone)
+                    .stroke(AegisColors.brandAccent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                    .frame(width: 32, height: 32)
+                    .rotationEffect(.degrees(-90))
+            }
+        }
+        .padding(AegisSpacing.md)
+        .background(
+            LinearGradient(
+                colors: [AegisColors.brandAccent.opacity(0.05), AegisColors.brandPrimary.opacity(0.05)],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: AegisSpacing.cardCornerRadius))
+    }
+
+    // MARK: - Most Visited Section
+
+    private var mostVisitedSection: some View {
+        VStack(alignment: .leading, spacing: AegisSpacing.sm) {
+            Text(String(localized: "most_visited_title"))
+                .font(AegisTypography.headlineSmall)
+                .foregroundStyle(AegisColors.textPrimary)
+
+            LazyVGrid(columns: columns, spacing: AegisSpacing.md) {
+                ForEach(historyManager.mostVisited(limit: 8), id: \.1) { title, urlString, count in
+                    Button {
+                        onQuickLink(urlString)
+                    } label: {
+                        VStack(spacing: AegisSpacing.xs) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(AegisColors.brandPrimary.opacity(0.08))
+                                    .frame(width: 52, height: 52)
+
+                                let domain = URL(string: urlString)?.host?.replacingOccurrences(of: "www.", with: "") ?? ""
+                                Text(String(domain.prefix(2)).uppercased())
+                                    .font(AegisTypography.labelMedium)
+                                    .foregroundStyle(AegisColors.brandPrimary)
+                            }
+
+                            Text(title)
+                                .font(AegisTypography.captionSmall)
+                                .foregroundStyle(AegisColors.textPrimary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

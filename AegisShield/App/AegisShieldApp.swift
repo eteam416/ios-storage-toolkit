@@ -8,6 +8,11 @@ struct AegisShieldApp: App {
     @StateObject private var languageManager = LanguageManager()
     @StateObject private var searchEngineManager = SearchEngineManager()
     @StateObject private var adBlockManager = AdBlockManager()
+    @StateObject private var bookmarkManager = BookmarkManager()
+    @StateObject private var historyManager = HistoryManager()
+    @StateObject private var readingListManager = ReadingListManager()
+    @StateObject private var notesManager = NotesManager()
+    @StateObject private var rewardsManager = UsageRewardsManager()
     @StateObject private var analyticsManager = AnalyticsManager()
 
     init() {
@@ -23,6 +28,11 @@ struct AegisShieldApp: App {
                 .environmentObject(languageManager)
                 .environmentObject(searchEngineManager)
                 .environmentObject(adBlockManager)
+                .environmentObject(bookmarkManager)
+                .environmentObject(historyManager)
+                .environmentObject(readingListManager)
+                .environmentObject(notesManager)
+                .environmentObject(rewardsManager)
                 .environmentObject(analyticsManager)
                 .environment(\.locale, languageManager.currentLocale)
                 .environment(\.layoutDirection, languageManager.layoutDirection)
