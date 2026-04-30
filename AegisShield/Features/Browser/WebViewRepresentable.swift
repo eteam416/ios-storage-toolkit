@@ -83,13 +83,13 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     private var observations: [NSKeyValueObservation] = []
 
     /// File extensions that trigger a download instead of navigation.
+    /// Excludes web-renderable types (pdf, txt, json, xml, csv, images) that
+    /// WKWebView can display inline.
     private static let downloadExtensions: Set<String> = [
         "zip", "rar", "7z", "tar", "gz", "bz2", "xz",
-        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+        "doc", "docx", "xls", "xlsx", "ppt", "pptx",
         "mp3", "m4a", "aac", "wav", "flac", "ogg",
-        "mp4", "mov", "avi", "mkv", "webm", "m4v",
         "dmg", "iso", "apk", "ipa",
-        "csv", "json", "xml", "txt",
         "epub", "mobi",
     ]
 
@@ -266,7 +266,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             if trimmed.lowercased().hasPrefix("filename") {
                 let parts = trimmed.components(separatedBy: "=")
                 if parts.count >= 2 {
-                    return parts[1].trimmingCharacters(in: CharacterSet(charactersIn: "\"' "))
+                    return parts.dropFirst().joined(separator: "=").trimmingCharacters(in: CharacterSet(charactersIn: "\"' "))
                 }
             }
         }

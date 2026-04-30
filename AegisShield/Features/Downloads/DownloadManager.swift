@@ -235,6 +235,12 @@ final class DownloadManager: NSObject, ObservableObject {
     // MARK: - Clear Completed
 
     func clearCompleted() {
+        let toRemove = downloads.filter { $0.status == .completed || $0.status == .failed || $0.status == .cancelled }
+        for item in toRemove {
+            if let localURL = item.localFileURL {
+                try? FileManager.default.removeItem(at: localURL)
+            }
+        }
         downloads.removeAll { $0.status == .completed || $0.status == .failed || $0.status == .cancelled }
         saveDownloadHistory()
     }
@@ -302,7 +308,7 @@ final class DownloadManager: NSObject, ObservableObject {
         let ext = url.pathExtension
 
         while FileManager.default.fileExists(atPath: url.path) {
-            let newName = "\(name)_\(counter).\(ext)"
+            let newName = ext.isEmpty ? "\(name)_\(counter)" : "\(name)_\(counter).\(ext)"
             url = downloadsDirectory.appendingPathComponent(newName)
             counter += 1
         }
