@@ -5,6 +5,8 @@ import WebKit
 struct WebViewRepresentable: UIViewRepresentable {
     @ObservedObject var viewModel: BrowserViewModel
     @EnvironmentObject var adBlockManager: AdBlockManager
+    @EnvironmentObject var historyManager: HistoryManager
+    @EnvironmentObject var rewardsManager: UsageRewardsManager
 
     let isIncognito: Bool
 
@@ -61,7 +63,13 @@ struct WebViewRepresentable: UIViewRepresentable {
     }
 
     func makeCoordinator() -> WebViewCoordinator {
-        WebViewCoordinator(viewModel: viewModel, adBlockManager: adBlockManager)
+        WebViewCoordinator(
+            viewModel: viewModel,
+            adBlockManager: adBlockManager,
+            historyManager: historyManager,
+            rewardsManager: rewardsManager,
+            isIncognito: isIncognito
+        )
     }
 
     private func buildUserAgent(webView: WKWebView) -> String {
@@ -78,11 +86,17 @@ struct WebViewRepresentable: UIViewRepresentable {
 final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     let viewModel: BrowserViewModel
     let adBlockManager: AdBlockManager
+    let historyManager: HistoryManager
+    let rewardsManager: UsageRewardsManager
+    let isIncognito: Bool
     private var observations: [NSKeyValueObservation] = []
 
-    init(viewModel: BrowserViewModel, adBlockManager: AdBlockManager) {
+    init(viewModel: BrowserViewModel, adBlockManager: AdBlockManager, historyManager: HistoryManager, rewardsManager: UsageRewardsManager, isIncognito: Bool) {
         self.viewModel = viewModel
         self.adBlockManager = adBlockManager
+        self.historyManager = historyManager
+        self.rewardsManager = rewardsManager
+        self.isIncognito = isIncognito
     }
 
     func observeWebView(_ webView: WKWebView) {
@@ -132,6 +146,26 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         Task { @MainActor in
             viewModel.updateFromWebView(webView)
+
+            guard !isIncognito else { return }
+
+            // Record history entry
+            if let url = webView.url, !url.absoluteString.hasPrefix("about:") {
+                historyManager.addEntry(
+                    title: webView.title ?? url.host ?? url.absoluteString,
+                    urlString: url.absoluteString
+                )
+            }
+
+            // Record page view and per-page ad-block estimates for rewards.
+            // Uses fixed per-page estimates (matching AdBlockManager) instead of
+            // syncing from adBlockManager.stats, which includes incognito pages
+            // and resets to zero when the user clears stats.
+            rewardsManager.recordPageView()
+            if !adBlockManager.compiledRuleLists.isEmpty {
+                rewardsManager.recordAdsBlocked(8)
+                rewardsManager.recordTrackersBlocked(12)
+            }
         }
     }
 

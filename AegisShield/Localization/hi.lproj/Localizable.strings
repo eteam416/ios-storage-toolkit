@@ -17,6 +17,7 @@
 "cancel_button" = "Cancel";
 "ok_button" = "OK";
 "clear_button" = "Clear";
+"delete_button" = "हटाएं";
 "loading" = "Loading...";
 "try_again_button" = "Try Again";
 "get_started_button" = "Get Started";
@@ -130,3 +131,117 @@
 "select_search_engine_title" = "Select Search Engine";
 "clear_data_title" = "Clear Browsing Data";
 "clear_data_message" = "This will clear all browsing history, cookies, and cached data. This action cannot be undone.";
+
+// Bookmarks
+"bookmarks_title" = "Bookmarks";
+"bookmarks_menu" = "Bookmarks";
+"favorites_section" = "Favorites";
+"folders_section" = "Folders";
+"all_bookmarks_section" = "All Bookmarks";
+"no_bookmarks_message" = "No bookmarks saved yet.";
+"search_bookmarks_placeholder" = "Search bookmarks";
+"new_folder_title" = "New Folder";
+"new_folder_button" = "New Folder";
+"folder_name_placeholder" = "Folder name";
+"create_button" = "Create";
+"back_button" = "Back";
+"add_bookmark_menu" = "Add Bookmark";
+"remove_bookmark_menu" = "Remove Bookmark";
+"add_favorite_button" = "Add to Favorites";
+"remove_favorite_button" = "Remove from Favorites";
+"favorite_button" = "Favorite";
+
+// History
+"history_title" = "History";
+"history_menu" = "History";
+"search_history_placeholder" = "Search history";
+"no_history_title" = "No Browsing History";
+"no_history_subtitle" = "Pages you visit will appear here.";
+"today_label" = "Today";
+"yesterday_label" = "Yesterday";
+"this_week_label" = "This Week";
+"this_month_label" = "This Month";
+"search_results_label" = "Search Results";
+"clear_today_button" = "Clear Today";
+"clear_all_history_button" = "Clear All History";
+"clear_history_title" = "Clear History";
+"clear_history_message" = "This will delete all browsing history. This action cannot be undone.";
+
+// Reading List
+"reading_list_title" = "Reading List";
+"reading_list_menu" = "Reading List";
+"add_to_reading_list_menu" = "Add to Reading List";
+"no_reading_list_title" = "Reading List Empty";
+"no_reading_list_subtitle" = "Save articles to read later.";
+"unread_section" = "Unread";
+"read_section" = "Read";
+"mark_read_button" = "Mark as Read";
+"mark_unread_button" = "Mark as Unread";
+
+// Reader Mode
+"reader_mode_menu" = "Reader Mode";
+"reader_mode_error" = "Could not extract content from this page.";
+
+// Notes
+"notes_title" = "Notes";
+"notes_menu" = "Notes";
+"no_notes_title" = "No Notes Yet";
+"no_notes_subtitle" = "Take notes while browsing any page.";
+"new_note_title" = "New Note";
+"edit_note_title" = "Edit Note";
+"save_button" = "Save";
+"open_page_button" = "Open Source Page";
+
+// Rewards & Streaks
+"rewards_title" = "Rewards";
+"rewards_menu" = "Rewards & Streaks";
+"day_streak_label" = "Day Streak";
+"best_streak_label %lld" = "Best: %lld days";
+"next_milestone_label" = "Next Milestone";
+"total_days_stat" = "Days Active";
+"pages_visited_stat" = "Pages Visited";
+"lifetime_ads_blocked_stat" = "Ads Blocked";
+"lifetime_trackers_blocked_stat" = "Trackers Blocked";
+"badges_title" = "Badges";
+"badge_unlocked_title" = "Badge Unlocked!";
+"awesome_button" = "Awesome!";
+"streak_day_count %lld" = "%lld-Day Streak 🔥";
+"most_visited_title" = "Most Visited";
+
+// Badge Names
+"badge_first_day" = "First Day";
+"badge_week_streak" = "Week Warrior";
+"badge_month_streak" = "Monthly Legend";
+"badge_ad_blocker_100" = "Ad Shield";
+"badge_ad_blocker_1000" = "Ad Destroyer";
+"badge_ad_blocker_10000" = "Ad Annihilator";
+"badge_tracker_hunter_100" = "Tracker Hunter";
+"badge_tracker_hunter_1000" = "Tracker Master";
+"badge_page_explorer_100" = "Explorer";
+"badge_page_explorer_1000" = "Navigator";
+"badge_privacy_champion" = "Privacy Champion";
+"badge_speed_demon" = "Speed Demon";
+
+// Badge Descriptions
+"badge_first_day_desc" = "Used AegisShield for the first time";
+"badge_week_streak_desc" = "7-day browsing streak";
+"badge_month_streak_desc" = "30-day browsing streak";
+"badge_ad_blocker_100_desc" = "Blocked 100 ads";
+"badge_ad_blocker_1000_desc" = "Blocked 1,000 ads";
+"badge_ad_blocker_10000_desc" = "Blocked 10,000 ads";
+"badge_tracker_hunter_100_desc" = "Stopped 100 trackers";
+"badge_tracker_hunter_1000_desc" = "Stopped 1,000 trackers";
+"badge_page_explorer_100_desc" = "Visited 100 pages";
+"badge_page_explorer_1000_desc" = "Visited 1,000 pages";
+"badge_privacy_champion_desc" = "14 days active with 500+ ads blocked";
+"badge_speed_demon_desc" = "200+ pages with a 3-day streak";
+
+// Milestones
+"milestone_100_ads" = "Block 100 ads";
+"milestone_1000_ads" = "Block 1,000 ads";
+"milestone_7_day_streak" = "7-day streak";
+"milestone_30_day_streak" = "30-day streak";
+"milestone_legend" = "You're a legend!";
+
+// Library Section
+"library_section" = "Library";
