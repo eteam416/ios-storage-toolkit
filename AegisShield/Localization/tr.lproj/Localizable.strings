@@ -143,7 +143,6 @@
 "new_folder_button" = "New Folder";
 "folder_name_placeholder" = "Folder name";
 "create_button" = "Create";
-"cancel_button" = "Cancel";
 "back_button" = "Back";
 "add_bookmark_menu" = "Add Bookmark";
 "remove_bookmark_menu" = "Remove Bookmark";
@@ -166,7 +165,6 @@
 "clear_all_history_button" = "Clear All History";
 "clear_history_title" = "Clear History";
 "clear_history_message" = "This will delete all browsing history. This action cannot be undone.";
-"clear_button" = "Clear";
 
 // Reading List
 "reading_list_title" = "Reading List";

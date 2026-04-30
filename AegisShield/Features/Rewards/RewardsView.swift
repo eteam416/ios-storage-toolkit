@@ -68,7 +68,7 @@ struct RewardsView: View {
             // Streak calendar (last 7 days)
             HStack(spacing: AegisSpacing.xs) {
                 ForEach(0..<7, id: \.self) { dayOffset in
-                    let dayActive = dayOffset < rewardsManager.currentStreak
+                    let dayActive = dayOffset >= max(0, 7 - rewardsManager.currentStreak)
                     Circle()
                         .fill(dayActive ? AegisColors.brandAccent : AegisColors.inputBackground)
                         .frame(width: 28, height: 28)

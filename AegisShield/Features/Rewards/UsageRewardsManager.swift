@@ -248,6 +248,8 @@ final class UsageRewardsManager: ObservableObject {
     private func dateString(for date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.calendar = Calendar(identifier: .gregorian)
         return formatter.string(from: date)
     }
 
