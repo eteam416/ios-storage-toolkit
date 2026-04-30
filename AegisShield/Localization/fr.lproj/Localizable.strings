@@ -1,0 +1,132 @@
+/* TODO: Translate all strings to fr */
+/* AegisShield Browser - English Localization */
+
+// Splash
+"splash_tagline" = "Browse Without Boundaries";
+
+// Language Selection
+"language_title" = "Choose Your Language";
+"language_subtitle" = "You can change this anytime in Settings";
+"search_language" = "Search languages...";
+
+// Common
+"continue_button" = "Continue";
+"skip_button" = "Skip";
+"next_button" = "Next";
+"done_button" = "Done";
+"cancel_button" = "Cancel";
+"ok_button" = "OK";
+"clear_button" = "Clear";
+"loading" = "Loading...";
+"try_again_button" = "Try Again";
+"get_started_button" = "Get Started";
+
+// Onboarding
+"skip_onboarding" = "Skip onboarding";
+"onboarding_problem_title" = "The Web Is Broken";
+"onboarding_problem_subtitle" = "Ads track you. Pages load slowly. Your privacy is compromised on every site you visit.";
+"onboarding_solution_title" = "AegisShield Protects You";
+"onboarding_solution_subtitle" = "Built-in ad blocking, tracker prevention, and incognito browsing — all in one premium browser.";
+"onboarding_benefits_title" = "Faster. Cleaner. Private.";
+"onboarding_benefits_subtitle" = "Pages load up to 3x faster. No ads cluttering your view. Your browsing stays yours alone.";
+"onboarding_trust_title" = "Privacy You Can Trust";
+"onboarding_trust_subtitle" = "We never sell your data. Transparent blocking stats show exactly what we protect you from.";
+"onboarding_premium_title" = "Unlock Premium Browsing";
+"onboarding_premium_subtitle" = "Experience the full power of AegisShield with our premium features.";
+
+// Paywall
+"paywall_title" = "Unlock AegisShield Pro";
+"paywall_subtitle" = "Premium privacy browsing with advanced features";
+"feature_adblock" = "Advanced Ad & Tracker Blocking";
+"feature_incognito" = "Premium Incognito Mode";
+"feature_search_engine" = "Smart Search Engine Routing";
+"feature_speed" = "Lightning Fast Browsing";
+"yearly_plan_title" = "Yearly Plan";
+"lifetime_plan_title" = "Lifetime Access";
+"free_trial_badge" = "3-Day Free Trial";
+"per_month_label" = "/mo";
+"per_year_label" = "/year";
+"start_free_trial_cta" = "Start Free Trial";
+"purchase_lifetime_cta" = "Purchase Lifetime Access";
+"restore_purchases_button" = "Restore Purchases";
+"continue_limited_button" = "Continue with limited features";
+"subscription_disclosure" = "Payment will be charged to your Apple ID account at confirmation of purchase. Subscription automatically renews unless it is canceled at least 24 hours before the end of the current period. Your account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscriptions by going to your account settings on the App Store after purchase.";
+"privacy_policy_link" = "Privacy Policy";
+"terms_link" = "Terms of Use";
+"no_purchases_to_restore" = "No active purchases found to restore.";
+"restore_result_title" = "Restore Purchases";
+"purchases_restored_success" = "Your purchases have been restored successfully.";
+
+// Browser
+"smart_bar_placeholder" = "Search or enter website";
+"address_bar" = "Address bar";
+"address_bar_hint" = "Enter a URL or search query";
+"clear_text" = "Clear text";
+"secure_connection" = "Secure connection";
+"insecure_connection" = "Not secure";
+"go_back" = "Go back";
+"go_forward" = "Go forward";
+"share_page" = "Share page";
+"more_options" = "More options";
+"page_load_error_title" = "Page Could Not Be Loaded";
+
+// Tabs
+"new_tab_title" = "New Tab";
+"new_tab_menu" = "New Tab";
+"new_tab_button" = "New Tab";
+"tabs_title" = "Tabs";
+"tabs_count" = "%d tabs";
+"close_tab" = "Close tab";
+"normal_tabs_label" = "Tabs";
+"incognito_tabs_label" = "Incognito";
+
+// Incognito
+"incognito_mode_label" = "Incognito Mode";
+"enter_incognito_menu" = "Enter Incognito Mode";
+"exit_incognito_menu" = "Exit Incognito Mode";
+"close_all_incognito_menu" = "Close All Incognito Tabs";
+
+// Menu
+"menu_title" = "Menu";
+"reload_menu" = "Reload Page";
+"settings_menu" = "Settings";
+
+// Home
+"privacy_dashboard_title" = "Your Privacy Dashboard";
+"ads_blocked_stat" = "Ads Blocked";
+"trackers_blocked_stat" = "Trackers Blocked";
+"bandwidth_saved_stat" = "Bandwidth Saved";
+"time_saved_stat" = "Time Saved";
+"exact_count_label" = "exact count";
+"estimated_label" = "estimated";
+"quick_shortcuts_title" = "Quick Shortcuts";
+"default_search_engine_label" = "Default search engine:";
+
+// Settings
+"settings_title" = "Settings";
+"subscription_section" = "Subscription";
+"status_label" = "Status";
+"pro_active_label" = "Pro (Active)";
+"free_label" = "Free";
+"manage_subscription_button" = "Manage Subscription";
+"subscription_help_button" = "Subscription Help";
+"browsing_section" = "Browsing";
+"search_engine_label" = "Search Engine";
+"adblock_toggle_label" = "Ad Blocking";
+"privacy_section" = "Privacy";
+"clear_browsing_data_button" = "Clear Browsing Data";
+"reset_stats_button" = "Reset Blocking Stats";
+"preferences_section" = "Preferences";
+"language_label" = "Language";
+"support_section" = "Support";
+"contact_support_button" = "Contact Support";
+"legal_section" = "Legal";
+"privacy_policy_label" = "Privacy Policy";
+"terms_label" = "Terms & Conditions";
+"about_section" = "About";
+"version_label" = "Version";
+"build_label" = "Build";
+"select_language_title" = "Select Language";
+"select_search_engine_title" = "Select Search Engine";
+"clear_data_title" = "Clear Browsing Data";
+"clear_data_message" = "This will clear all browsing history, cookies, and cached data. This action cannot be undone.";

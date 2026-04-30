@@ -1,0 +1,52 @@
+/* AegisShield Browser - Chinese (Simplified) Localization */
+
+// Splash
+"splash_tagline" = "\u{65E0}\u{754C}\u{6D4F}\u{89C8}";
+
+// Language Selection
+"language_title" = "\u{9009}\u{62E9}\u{4F60}\u{7684}\u{8BED}\u{8A00}";
+"language_subtitle" = "\u{4F60}\u{53EF}\u{4EE5}\u{968F}\u{65F6}\u{5728}\u{8BBE}\u{7F6E}\u{4E2D}\u{66F4}\u{6539}";
+"search_language" = "\u{641C}\u{7D22}\u{8BED}\u{8A00}...";
+
+// Common
+"continue_button" = "\u{7EE7}\u{7EED}";
+"skip_button" = "\u{8DF3}\u{8FC7}";
+"next_button" = "\u{4E0B}\u{4E00}\u{6B65}";
+"done_button" = "\u{5B8C}\u{6210}";
+"cancel_button" = "\u{53D6}\u{6D88}";
+"ok_button" = "\u{786E}\u{5B9A}";
+"clear_button" = "\u{6E05}\u{9664}";
+"loading" = "\u{52A0}\u{8F7D}\u{4E2D}...";
+"try_again_button" = "\u{91CD}\u{8BD5}";
+"get_started_button" = "\u{5F00}\u{59CB}\u{4F7F}\u{7528}";
+
+// Onboarding
+"skip_onboarding" = "\u{8DF3}\u{8FC7}\u{5F15}\u{5BFC}";
+"onboarding_problem_title" = "\u{7F51}\u{7EDC}\u{5DF2}\u{7ECF}\u{7834}\u{788E}";
+"onboarding_problem_subtitle" = "\u{5E7F}\u{544A}\u{8FFD}\u{8E2A}\u{4F60}\u{3002}\u{9875}\u{9762}\u{52A0}\u{8F7D}\u{7F13}\u{6162}\u{3002}\u{4F60}\u{7684}\u{9690}\u{79C1}\u{5728}\u{6BCF}\u{4E2A}\u{7F51}\u{7AD9}\u{4E0A}\u{90FD}\u{53D7}\u{5230}\u{5A01}\u{80C1}\u{3002}";
+"onboarding_solution_title" = "AegisShield \u{4FDD}\u{62A4}\u{4F60}";
+"onboarding_solution_subtitle" = "\u{5185}\u{7F6E}\u{5E7F}\u{544A}\u{62E6}\u{622A}\u{3001}\u{8FFD}\u{8E2A}\u{5668}\u{9632}\u{62A4}\u{548C}\u{65E0}\u{75D5}\u{6D4F}\u{89C8}\u{2014}\u{2014}\u{5168}\u{90E8}\u{96C6}\u{6210}\u{5728}\u{4E00}\u{4E2A}\u{9AD8}\u{7AEF}\u{6D4F}\u{89C8}\u{5668}\u{4E2D}\u{3002}";
+"onboarding_benefits_title" = "\u{66F4}\u{5FEB}\u{3002}\u{66F4}\u{5E72}\u{51C0}\u{3002}\u{66F4}\u{79C1}\u{5BC6}\u{3002}";
+"onboarding_benefits_subtitle" = "\u{9875}\u{9762}\u{52A0}\u{8F7D}\u{5FEB}3\u{500D}\u{3002}\u{65E0}\u{5E7F}\u{544A}\u{5E72}\u{6270}\u{3002}\u{4F60}\u{7684}\u{6D4F}\u{89C8}\u{53EA}\u{5C5E}\u{4E8E}\u{4F60}\u{3002}";
+"onboarding_trust_title" = "\u{503C}\u{5F97}\u{4FE1}\u{8D56}\u{7684}\u{9690}\u{79C1}";
+"onboarding_trust_subtitle" = "\u{6211}\u{4EEC}\u{6C38}\u{8FDC}\u{4E0D}\u{4F1A}\u{51FA}\u{552E}\u{4F60}\u{7684}\u{6570}\u{636E}\u{3002}\u{900F}\u{660E}\u{7684}\u{62E6}\u{622A}\u{7EDF}\u{8BA1}\u{5C55}\u{793A}\u{6211}\u{4EEC}\u{4FDD}\u{62A4}\u{4F60}\u{514D}\u{53D7}\u{4EC0}\u{4E48}\u{3002}";
+"onboarding_premium_title" = "\u{89E3}\u{9501}\u{9AD8}\u{7EA7}\u{6D4F}\u{89C8}";
+"onboarding_premium_subtitle" = "\u{4F53}\u{9A8C} AegisShield \u{7684}\u{5168}\u{90E8}\u{529F}\u{80FD}\u{3002}";
+
+// Paywall
+"paywall_title" = "\u{89E3}\u{9501} AegisShield Pro";
+"paywall_subtitle" = "\u{9AD8}\u{7EA7}\u{9690}\u{79C1}\u{6D4F}\u{89C8}\u{FF0C}\u{62E5}\u{6709}\u{9AD8}\u{7EA7}\u{529F}\u{80FD}";
+"feature_adblock" = "\u{9AD8}\u{7EA7}\u{5E7F}\u{544A}\u{548C}\u{8FFD}\u{8E2A}\u{5668}\u{62E6}\u{622A}";
+"feature_incognito" = "\u{9AD8}\u{7EA7}\u{65E0}\u{75D5}\u{6D4F}\u{89C8}\u{6A21}\u{5F0F}";
+"feature_search_engine" = "\u{667A}\u{80FD}\u{641C}\u{7D22}\u{5F15}\u{64CE}\u{8DEF}\u{7531}";
+"feature_speed" = "\u{95EA}\u{7535}\u{822C}\u{5FEB}\u{901F}\u{6D4F}\u{89C8}";
+
+// Settings
+"settings_title" = "\u{8BBE}\u{7F6E}";
+"subscription_section" = "\u{8BA2}\u{9605}";
+"browsing_section" = "\u{6D4F}\u{89C8}";
+"privacy_section" = "\u{9690}\u{79C1}";
+"preferences_section" = "\u{504F}\u{597D}";
+"support_section" = "\u{652F}\u{6301}";
+"legal_section" = "\u{6CD5}\u{5F8B}";
+"about_section" = "\u{5173}\u{4E8E}";
