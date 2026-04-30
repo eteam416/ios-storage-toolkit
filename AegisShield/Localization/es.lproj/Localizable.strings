@@ -50,3 +50,34 @@
 "support_section" = "Soporte";
 "legal_section" = "Legal";
 "about_section" = "Acerca de";
+
+// Downloads
+"downloads_title" = "Downloads";
+"downloads_menu" = "Downloads";
+"no_downloads_title" = "No Downloads Yet";
+"no_downloads_subtitle" = "Files you download from websites will appear here.";
+"active_downloads_section" = "Active";
+"completed_downloads_section" = "Completed";
+"failed_downloads_section" = "Failed";
+"clear_completed_button" = "Clear Completed";
+"delete_download_title" = "Delete Download";
+"delete_download_message" = "This will permanently delete the downloaded file.";
+"delete_button" = "Delete";
+"open_file_button" = "Open File";
+"share_file_button" = "Share";
+"save_to_files_button" = "Save to Files";
+"retry_button" = "Retry";
+"cancel_download" = "Cancel download";
+"download_failed_label" = "Download failed";
+"download_cancelled_label" = "Cancelled";
+"download_paused_label" = "Paused";
+"tap_to_open_label" = "Tap to open";
+"unknown_size" = "Unknown size";
+"share_button_label" = "Share";
+"save_button_label" = "Save to Files";
+"file_open_error_title" = "Cannot Open File";
+"file_open_error_subtitle" = "This file type is not supported for preview.";
+"rewind_15" = "Rewind 15 seconds";
+"forward_15" = "Forward 15 seconds";
+"play_button_label" = "Play";
+"pause_button_label" = "Pause";

@@ -1,10 +1,11 @@
 import SwiftUI
 import WebKit
 
-/// UIViewRepresentable wrapper for WKWebView with ad-blocking support.
+/// UIViewRepresentable wrapper for WKWebView with ad-blocking and download support.
 struct WebViewRepresentable: UIViewRepresentable {
     @ObservedObject var viewModel: BrowserViewModel
     @EnvironmentObject var adBlockManager: AdBlockManager
+    var downloadManager: DownloadManager?
 
     let isIncognito: Bool
 
@@ -61,7 +62,7 @@ struct WebViewRepresentable: UIViewRepresentable {
     }
 
     func makeCoordinator() -> WebViewCoordinator {
-        WebViewCoordinator(viewModel: viewModel, adBlockManager: adBlockManager)
+        WebViewCoordinator(viewModel: viewModel, adBlockManager: adBlockManager, downloadManager: downloadManager)
     }
 
     private func buildUserAgent(webView: WKWebView) -> String {
@@ -78,11 +79,24 @@ struct WebViewRepresentable: UIViewRepresentable {
 final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     let viewModel: BrowserViewModel
     let adBlockManager: AdBlockManager
+    let downloadManager: DownloadManager?
     private var observations: [NSKeyValueObservation] = []
 
-    init(viewModel: BrowserViewModel, adBlockManager: AdBlockManager) {
+    /// File extensions that trigger a download instead of navigation.
+    private static let downloadExtensions: Set<String> = [
+        "zip", "rar", "7z", "tar", "gz", "bz2", "xz",
+        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+        "mp3", "m4a", "aac", "wav", "flac", "ogg",
+        "mp4", "mov", "avi", "mkv", "webm", "m4v",
+        "dmg", "iso", "apk", "ipa",
+        "csv", "json", "xml", "txt",
+        "epub", "mobi",
+    ]
+
+    init(viewModel: BrowserViewModel, adBlockManager: AdBlockManager, downloadManager: DownloadManager?) {
         self.viewModel = viewModel
         self.adBlockManager = adBlockManager
+        self.downloadManager = downloadManager
     }
 
     func observeWebView(_ webView: WKWebView) {
@@ -178,7 +192,85 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             return
         }
 
+        // Check if URL is a downloadable file
+        let pathExtension = url.pathExtension.lowercased()
+        if !pathExtension.isEmpty && Self.downloadExtensions.contains(pathExtension) {
+            Task { @MainActor in
+                downloadManager?.startDownload(url: url, suggestedFilename: url.lastPathComponent)
+            }
+            decisionHandler(.cancel)
+            return
+        }
+
         decisionHandler(.allow)
+    }
+
+    // MARK: - Download Navigation Response
+
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationResponse: WKNavigationResponse,
+        decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+    ) {
+        guard let response = navigationResponse.response as? HTTPURLResponse,
+              let url = response.url else {
+            decisionHandler(.allow)
+            return
+        }
+
+        // Check Content-Disposition header for attachment downloads
+        if let contentDisposition = response.value(forHTTPHeaderField: "Content-Disposition"),
+           contentDisposition.lowercased().contains("attachment") {
+            let filename = extractFilename(from: contentDisposition) ?? url.lastPathComponent
+            Task { @MainActor in
+                downloadManager?.startDownload(url: url, suggestedFilename: filename)
+            }
+            decisionHandler(.cancel)
+            return
+        }
+
+        // Check MIME type for non-renderable content
+        if let mimeType = response.mimeType {
+            let nonRenderableMIME = [
+                "application/octet-stream",
+                "application/zip",
+                "application/x-rar-compressed",
+                "application/x-7z-compressed",
+                "application/x-tar",
+                "application/gzip",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            ]
+            if nonRenderableMIME.contains(mimeType) {
+                let filename = url.lastPathComponent
+                Task { @MainActor in
+                    downloadManager?.startDownload(url: url, suggestedFilename: filename)
+                }
+                decisionHandler(.cancel)
+                return
+            }
+        }
+
+        decisionHandler(.allow)
+    }
+
+    private func extractFilename(from contentDisposition: String) -> String? {
+        // Parse filename from Content-Disposition: attachment; filename="file.pdf"
+        let components = contentDisposition.components(separatedBy: ";")
+        for component in components {
+            let trimmed = component.trimmingCharacters(in: .whitespaces)
+            if trimmed.lowercased().hasPrefix("filename") {
+                let parts = trimmed.components(separatedBy: "=")
+                if parts.count >= 2 {
+                    return parts[1].trimmingCharacters(in: CharacterSet(charactersIn: "\"' "))
+                }
+            }
+        }
+        return nil
     }
 
     // MARK: - WKUIDelegate

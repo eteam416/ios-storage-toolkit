@@ -6,11 +6,13 @@ struct MainBrowserView: View {
     @EnvironmentObject private var searchEngineManager: SearchEngineManager
     @EnvironmentObject private var adBlockManager: AdBlockManager
     @EnvironmentObject private var subscriptionManager: SubscriptionManager
+    @EnvironmentObject private var downloadManager: DownloadManager
 
     @State private var showTabGrid = false
     @State private var showMenu = false
     @State private var showSettings = false
     @State private var showShareSheet = false
+    @State private var showDownloads = false
     @State private var showHome = true
 
     var body: some View {
@@ -61,6 +63,7 @@ struct MainBrowserView: View {
                     } else if let tab = tabManager.activeTab {
                         WebViewRepresentable(
                             viewModel: tab.viewModel,
+                            downloadManager: downloadManager,
                             isIncognito: tab.isIncognito
                         )
                     }
@@ -68,6 +71,31 @@ struct MainBrowserView: View {
                     // Error overlay
                     if let error = tabManager.activeTab?.viewModel.errorMessage {
                         errorOverlay(error)
+                    }
+
+                    // Download alert banner
+                    if downloadManager.showDownloadAlert,
+                       let item = downloadManager.latestDownloadItem {
+                        VStack {
+                            Spacer()
+                            DownloadAlertBanner(item: item) {
+                                downloadManager.showDownloadAlert = false
+                                showDownloads = true
+                            }
+                            .padding(.bottom, AegisSpacing.xs)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                            .onAppear {
+                                // Auto-hide after 5 seconds if completed
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+                                    if item.status == .completed {
+                                        withAnimation {
+                                            downloadManager.showDownloadAlert = false
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .animation(.spring(response: 0.4), value: downloadManager.showDownloadAlert)
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -104,12 +132,19 @@ struct MainBrowserView: View {
                     tabManager.activeTab?.viewModel.reload()
                     showMenu = false
                 },
+                onDownloads: {
+                    showMenu = false
+                    showDownloads = true
+                },
                 isIncognito: tabManager.isIncognitoMode
             )
             .presentationDetents([.medium])
         }
         .sheet(isPresented: $showSettings) {
             SettingsView()
+        }
+        .sheet(isPresented: $showDownloads) {
+            DownloadsView()
         }
         .sheet(isPresented: $showShareSheet) {
             if let url = tabManager.activeTab?.viewModel.currentURL {
@@ -157,18 +192,6 @@ struct MainBrowserView: View {
     }
 }
 
-// MARK: - Share Sheet
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
 // MARK: - Browser Menu
 
 struct BrowserMenuView: View {
@@ -176,10 +199,12 @@ struct BrowserMenuView: View {
     let onNewTab: () -> Void
     let onSettings: () -> Void
     let onReload: () -> Void
+    let onDownloads: () -> Void
     let isIncognito: Bool
 
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var adBlockManager: AdBlockManager
+    @EnvironmentObject private var downloadManager: DownloadManager
 
     var body: some View {
         NavigationStack {
@@ -207,6 +232,14 @@ struct BrowserMenuView: View {
                 }
 
                 Section {
+                    menuButton(
+                        icon: "arrow.down.circle",
+                        title: String(localized: "downloads_menu")
+                    ) {
+                        onDownloads()
+                    }
+                    .badge(downloadManager.activeDownloadCount)
+
                     menuButton(icon: "gearshape", title: String(localized: "settings_menu")) {
                         onSettings()
                     }
