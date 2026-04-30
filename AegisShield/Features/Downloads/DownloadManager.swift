@@ -230,6 +230,7 @@ final class DownloadManager: NSObject, ObservableObject {
     func wkDownloadDidFinish(_ download: WKDownload) {
         guard let item = wkDownloadItems.removeValue(forKey: download),
               let destinationURL = wkDownloadDestinations.removeValue(forKey: download) else { return }
+        Self.releaseReservedPath(destinationURL)
         item.localFileURL = destinationURL
         item.status = .completed
         item.progress = 1.0
@@ -245,7 +246,9 @@ final class DownloadManager: NSObject, ObservableObject {
 
     func wkDownloadDidFail(_ download: WKDownload, error: Error) {
         guard let item = wkDownloadItems.removeValue(forKey: download) else { return }
-        wkDownloadDestinations.removeValue(forKey: download)
+        if let dest = wkDownloadDestinations.removeValue(forKey: download) {
+            Self.releaseReservedPath(dest)
+        }
         item.status = .failed
         item.error = error.localizedDescription
         activeDownloadCount = max(0, activeDownloadCount - 1)
@@ -370,6 +373,7 @@ final class DownloadManager: NSObject, ObservableObject {
     /// Computes a unique file path in the downloads directory. Nonisolated so it
     /// can be called synchronously from URLSession delegate callbacks.
     private static let filenameLock = NSLock()
+    private static var reservedPaths: Set<String> = []
 
     nonisolated static func computeUniqueFilename(for filename: String) -> URL {
         filenameLock.lock()
@@ -380,15 +384,21 @@ final class DownloadManager: NSObject, ObservableObject {
         let name = url.deletingPathExtension().lastPathComponent
         let ext = url.pathExtension
 
-        while FileManager.default.fileExists(atPath: url.path) {
+        while FileManager.default.fileExists(atPath: url.path) || reservedPaths.contains(url.path) {
             let newName = ext.isEmpty ? "\(name)_\(counter)" : "\(name)_\(counter).\(ext)"
             url = downloadsDirectory.appendingPathComponent(newName)
             counter += 1
         }
 
-        // Create a placeholder to reserve the path before releasing the lock
-        FileManager.default.createFile(atPath: url.path, contents: nil)
+        reservedPaths.insert(url.path)
         return url
+    }
+
+    /// Releases a previously reserved path after download completes or fails.
+    nonisolated static func releaseReservedPath(_ url: URL) {
+        filenameLock.lock()
+        defer { filenameLock.unlock() }
+        reservedPaths.remove(url.path)
     }
 }
 
@@ -415,6 +425,7 @@ extension DownloadManager: URLSessionDownloadDelegate {
         } catch {
             moveResult = .failure(error)
         }
+        Self.releaseReservedPath(destinationURL)
 
         // Now update the UI-bound state on the main actor.
         Task { @MainActor in
