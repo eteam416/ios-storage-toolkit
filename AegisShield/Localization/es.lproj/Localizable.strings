@@ -1,0 +1,52 @@
+/* AegisShield Browser - Spanish Localization */
+
+// Splash
+"splash_tagline" = "Navega Sin L\u{00ED}mites";
+
+// Language Selection
+"language_title" = "Elige Tu Idioma";
+"language_subtitle" = "Puedes cambiarlo en cualquier momento en Ajustes";
+"search_language" = "Buscar idiomas...";
+
+// Common
+"continue_button" = "Continuar";
+"skip_button" = "Omitir";
+"next_button" = "Siguiente";
+"done_button" = "Listo";
+"cancel_button" = "Cancelar";
+"ok_button" = "Aceptar";
+"clear_button" = "Borrar";
+"loading" = "Cargando...";
+"try_again_button" = "Intentar de nuevo";
+"get_started_button" = "Comenzar";
+
+// Onboarding
+"skip_onboarding" = "Omitir introducci\u{00F3}n";
+"onboarding_problem_title" = "La Web Est\u{00E1} Rota";
+"onboarding_problem_subtitle" = "Los anuncios te rastrean. Las p\u{00E1}ginas cargan lento. Tu privacidad est\u{00E1} comprometida.";
+"onboarding_solution_title" = "AegisShield Te Protege";
+"onboarding_solution_subtitle" = "Bloqueo de anuncios, prevenci\u{00F3}n de rastreadores y navegaci\u{00F3}n inc\u{00F3}gnita, todo en un navegador premium.";
+"onboarding_benefits_title" = "M\u{00E1}s R\u{00E1}pido. M\u{00E1}s Limpio. Privado.";
+"onboarding_benefits_subtitle" = "Las p\u{00E1}ginas cargan hasta 3 veces m\u{00E1}s r\u{00E1}pido. Sin anuncios. Tu navegaci\u{00F3}n es solo tuya.";
+"onboarding_trust_title" = "Privacidad en la que Puedes Confiar";
+"onboarding_trust_subtitle" = "Nunca vendemos tus datos. Estad\u{00ED}sticas transparentes muestran de qu\u{00E9} te protegemos.";
+"onboarding_premium_title" = "Desbloquea la Navegaci\u{00F3}n Premium";
+"onboarding_premium_subtitle" = "Experimenta todo el poder de AegisShield con nuestras funciones premium.";
+
+// Paywall
+"paywall_title" = "Desbloquea AegisShield Pro";
+"paywall_subtitle" = "Navegaci\u{00F3}n privada premium con funciones avanzadas";
+"feature_adblock" = "Bloqueo Avanzado de Anuncios y Rastreadores";
+"feature_incognito" = "Modo Inc\u{00F3}gnito Premium";
+"feature_search_engine" = "Enrutamiento Inteligente del Motor de B\u{00FA}squeda";
+"feature_speed" = "Navegaci\u{00F3}n Ultra R\u{00E1}pida";
+
+// Settings
+"settings_title" = "Ajustes";
+"subscription_section" = "Suscripci\u{00F3}n";
+"browsing_section" = "Navegaci\u{00F3}n";
+"privacy_section" = "Privacidad";
+"preferences_section" = "Preferencias";
+"support_section" = "Soporte";
+"legal_section" = "Legal";
+"about_section" = "Acerca de";
