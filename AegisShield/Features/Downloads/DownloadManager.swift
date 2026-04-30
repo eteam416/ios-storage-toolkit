@@ -242,7 +242,12 @@ final class DownloadManager: NSObject, ObservableObject {
     // MARK: - Retry Failed
 
     func retryDownload(_ item: DownloadItem) {
-        cancelDownload(item)
+        // Only cancel the task if still active; don't decrement count for already-failed items
+        if let task = downloadTasks.first(where: { $0.value.id == item.id })?.key {
+            task.cancel()
+            downloadTasks.removeValue(forKey: task)
+            activeDownloadCount = max(0, activeDownloadCount - 1)
+        }
         deleteDownload(item)
         startDownload(url: item.url, suggestedFilename: item.suggestedFilename)
     }
@@ -285,14 +290,20 @@ final class DownloadManager: NSObject, ObservableObject {
     // MARK: - File Operations
 
     func getUniqueFilename(for filename: String) -> URL {
-        var url = Self.downloadsDirectory.appendingPathComponent(filename)
+        Self.computeUniqueFilename(for: filename)
+    }
+
+    /// Computes a unique file path in the downloads directory. Nonisolated so it
+    /// can be called synchronously from URLSession delegate callbacks.
+    nonisolated static func computeUniqueFilename(for filename: String) -> URL {
+        var url = downloadsDirectory.appendingPathComponent(filename)
         var counter = 1
         let name = url.deletingPathExtension().lastPathComponent
         let ext = url.pathExtension
 
         while FileManager.default.fileExists(atPath: url.path) {
             let newName = "\(name)_\(counter).\(ext)"
-            url = Self.downloadsDirectory.appendingPathComponent(newName)
+            url = downloadsDirectory.appendingPathComponent(newName)
             counter += 1
         }
         return url
@@ -307,20 +318,35 @@ extension DownloadManager: URLSessionDownloadDelegate {
         downloadTask: URLSessionDownloadTask,
         didFinishDownloadingTo location: URL
     ) {
+        // The system deletes the temp file when this method returns, so the
+        // file MUST be moved synchronously—before any async dispatch.
+        let suggestedName = downloadTask.response?.suggestedFilename
+            ?? downloadTask.originalRequest?.url?.lastPathComponent
+            ?? "download"
+        let destinationURL = Self.computeUniqueFilename(for: suggestedName)
+        let mimeType = downloadTask.response?.mimeType
+
+        let moveResult: Result<URL, Error>
+        do {
+            try FileManager.default.moveItem(at: location, to: destinationURL)
+            moveResult = .success(destinationURL)
+        } catch {
+            moveResult = .failure(error)
+        }
+
+        // Now update the UI-bound state on the main actor.
         Task { @MainActor in
             guard let item = downloadTasks[downloadTask] else { return }
 
-            let destinationURL = getUniqueFilename(for: item.suggestedFilename)
-
-            do {
-                try FileManager.default.moveItem(at: location, to: destinationURL)
-                item.localFileURL = destinationURL
+            switch moveResult {
+            case .success(let url):
+                item.localFileURL = url
                 item.status = .completed
                 item.progress = 1.0
-                item.mimeType = downloadTask.response?.mimeType
+                item.mimeType = mimeType
                 activeDownloadCount = max(0, activeDownloadCount - 1)
                 saveDownloadHistory()
-            } catch {
+            case .failure(let error):
                 item.status = .failed
                 item.error = error.localizedDescription
                 activeDownloadCount = max(0, activeDownloadCount - 1)
