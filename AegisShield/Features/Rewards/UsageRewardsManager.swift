@@ -245,11 +245,11 @@ final class UsageRewardsManager: ObservableObject {
         if totalAdsBlocked < 100 {
             return Double(totalAdsBlocked) / 100.0
         } else if totalAdsBlocked < 1000 {
-            return Double(totalAdsBlocked) / 1000.0
+            return Double(totalAdsBlocked - 100) / 900.0
         } else if currentStreak < 7 {
             return Double(currentStreak) / 7.0
         } else if currentStreak < 30 {
-            return Double(currentStreak) / 30.0
+            return Double(currentStreak - 7) / 23.0
         }
         return 1.0
     }
