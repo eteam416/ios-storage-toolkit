@@ -50,3 +50,6 @@
 "support_section" = "\u{0627}\u{0644}\u{062F}\u{0639}\u{0645}";
 "legal_section" = "\u{0642}\u{0627}\u{0646}\u{0648}\u{0646}\u{064A}";
 "about_section" = "\u{062D}\u{0648}\u{0644}";
+
+// Search Suggestions
+"suggestion_label %@" = "البحث عن %@";

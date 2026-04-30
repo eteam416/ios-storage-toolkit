@@ -22,12 +22,22 @@ struct WebViewRepresentable: UIViewRepresentable {
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = []
 
-        // Apply ad-block rules to user content controller
+        // Apply ad-block rules and identity scripts
         let userContentController = WKUserContentController()
         for ruleList in adBlockManager.compiledRuleLists {
             userContentController.add(ruleList)
         }
+
+        // Inject anti-detection script so websites treat us as a real browser.
+        // This prevents login/signup flows from being blocked by bot detection.
+        userContentController.addUserScript(
+            BrowserIdentityManager.antiDetectionUserScript()
+        )
+
         configuration.userContentController = userContentController
+
+        // Allow JavaScript to open windows (needed for OAuth popups)
+        configuration.preferences.javaScriptCanOpenWindowsAutomatically = true
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
@@ -35,8 +45,8 @@ struct WebViewRepresentable: UIViewRepresentable {
         webView.allowsBackForwardNavigationGestures = true
         webView.allowsLinkPreview = true
 
-        // Custom user agent for social site compatibility
-        webView.customUserAgent = buildUserAgent(webView: webView)
+        // Use a real Safari user agent so websites don't flag us as a bot
+        webView.customUserAgent = BrowserIdentityManager.userAgent()
 
         viewModel.updateFromWebView(webView)
 
@@ -62,14 +72,6 @@ struct WebViewRepresentable: UIViewRepresentable {
 
     func makeCoordinator() -> WebViewCoordinator {
         WebViewCoordinator(viewModel: viewModel, adBlockManager: adBlockManager)
-    }
-
-    private func buildUserAgent(webView: WKWebView) -> String {
-        // Use a standard Safari user agent for maximum compatibility
-        // This ensures Google/Facebook/X/Instagram/TikTok login flows work
-        let osVersion = UIDevice.current.systemVersion.replacingOccurrences(of: ".", with: "_")
-        return "Mozilla/5.0 (iPhone; CPU iPhone OS \(osVersion) like Mac OS X) "
-            + "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
     }
 }
 
@@ -181,6 +183,22 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         decisionHandler(.allow)
     }
 
+    // MARK: - Response Policy (Social Login Cookie Handling)
+
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationResponse: WKNavigationResponse,
+        decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+    ) {
+        // Always allow responses from social login providers
+        if let url = navigationResponse.response.url,
+           BrowserIdentityManager.isSocialLoginURL(url) {
+            decisionHandler(.allow)
+            return
+        }
+        decisionHandler(.allow)
+    }
+
     // MARK: - WKUIDelegate
 
     func webView(
@@ -189,7 +207,8 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         for navigationAction: WKNavigationAction,
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
-        // Handle target="_blank" links by loading in current view
+        // Social login providers (Google, Facebook, etc.) often open OAuth
+        // flows in new windows. We must load them in our current view.
         if navigationAction.targetFrame == nil || !(navigationAction.targetFrame?.isMainFrame ?? false) {
             webView.load(navigationAction.request)
         }

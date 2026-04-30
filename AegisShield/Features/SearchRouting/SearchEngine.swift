@@ -9,7 +9,7 @@ struct SearchEngine: Identifiable, Hashable, Codable {
     let homepageURL: String
 
     func searchURL(for query: String) -> URL {
-        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed.subtracting(CharacterSet(charactersIn: "&=+"))) ?? query
         let urlString = urlTemplate.replacingOccurrences(of: "{query}", with: encoded)
         return URL(string: urlString) ?? URL(string: "https://www.google.com/search?q=\(encoded)")!
     }

@@ -130,3 +130,6 @@
 "select_search_engine_title" = "Select Search Engine";
 "clear_data_title" = "Clear Browsing Data";
 "clear_data_message" = "This will clear all browsing history, cookies, and cached data. This action cannot be undone.";
+
+// Search Suggestions
+"suggestion_label %@" = "%@ खोजें";
