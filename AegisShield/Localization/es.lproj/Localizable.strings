@@ -16,6 +16,7 @@
 "cancel_button" = "Cancelar";
 "ok_button" = "Aceptar";
 "clear_button" = "Borrar";
+"delete_button" = "Eliminar";
 "loading" = "Cargando...";
 "try_again_button" = "Intentar de nuevo";
 "get_started_button" = "Comenzar";

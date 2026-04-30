@@ -17,6 +17,7 @@
 "cancel_button" = "Cancel";
 "ok_button" = "OK";
 "clear_button" = "Clear";
+"delete_button" = "Sil";
 "loading" = "Loading...";
 "try_again_button" = "Try Again";
 "get_started_button" = "Get Started";

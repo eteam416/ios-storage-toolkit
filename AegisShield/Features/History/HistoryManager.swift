@@ -95,7 +95,12 @@ final class HistoryManager: ObservableObject {
         return grouped.sorted { a, b in
             let aIndex = order.firstIndex(of: a.key) ?? Int.max
             let bIndex = order.firstIndex(of: b.key) ?? Int.max
-            return aIndex < bIndex
+            if aIndex != bIndex {
+                return aIndex < bIndex
+            }
+            let aDate = a.value.first?.visitedAt ?? .distantPast
+            let bDate = b.value.first?.visitedAt ?? .distantPast
+            return aDate > bDate
         }
     }
 

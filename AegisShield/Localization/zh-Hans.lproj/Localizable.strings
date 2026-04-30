@@ -16,6 +16,7 @@
 "cancel_button" = "\u{53D6}\u{6D88}";
 "ok_button" = "\u{786E}\u{5B9A}";
 "clear_button" = "\u{6E05}\u{9664}";
+"delete_button" = "删除";
 "loading" = "\u{52A0}\u{8F7D}\u{4E2D}...";
 "try_again_button" = "\u{91CD}\u{8BD5}";
 "get_started_button" = "\u{5F00}\u{59CB}\u{4F7F}\u{7528}";

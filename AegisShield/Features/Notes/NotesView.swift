@@ -217,6 +217,9 @@ struct NotesView: View {
                 if let note {
                     newNoteContent = note.content
                     selectedColor = note.color
+                } else {
+                    newNoteContent = ""
+                    selectedColor = .yellow
                 }
             }
         }
