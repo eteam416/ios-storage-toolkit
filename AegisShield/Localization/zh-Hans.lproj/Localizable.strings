@@ -50,3 +50,6 @@
 "support_section" = "\u{652F}\u{6301}";
 "legal_section" = "\u{6CD5}\u{5F8B}";
 "about_section" = "\u{5173}\u{4E8E}";
+
+// Search Suggestions
+"suggestion_label %@" = "搜索 %@";

@@ -50,3 +50,6 @@
 "support_section" = "Soporte";
 "legal_section" = "Legal";
 "about_section" = "Acerca de";
+
+// Search Suggestions
+"suggestion_label %@" = "Buscar %@";

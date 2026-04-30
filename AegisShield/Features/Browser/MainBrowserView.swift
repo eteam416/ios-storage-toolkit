@@ -3,6 +3,7 @@ import SwiftUI
 /// Main browser view with tab management, smart bar, and toolbar.
 struct MainBrowserView: View {
     @StateObject private var tabManager = TabManager()
+    @StateObject private var suggestionService = SearchSuggestionService()
     @EnvironmentObject private var searchEngineManager: SearchEngineManager
     @EnvironmentObject private var adBlockManager: AdBlockManager
     @EnvironmentObject private var subscriptionManager: SubscriptionManager
@@ -34,6 +35,7 @@ struct MainBrowserView: View {
                             get: { tab.viewModel.urlString },
                             set: { tab.viewModel.urlString = $0 }
                         ),
+                        suggestionService: suggestionService,
                         isIncognito: isIncognito,
                         isLoading: tab.viewModel.isLoading,
                         isSecure: tab.viewModel.isSecure,
