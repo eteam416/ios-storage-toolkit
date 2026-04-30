@@ -81,6 +81,7 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     let adBlockManager: AdBlockManager
     let downloadManager: DownloadManager?
     private var observations: [NSKeyValueObservation] = []
+    var pendingDownloadFilename: String?
 
     /// File extensions that trigger a download instead of navigation.
     /// Excludes web-renderable types (pdf, txt, json, xml, csv, images) that
@@ -218,14 +219,14 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             return
         }
 
-        // Check Content-Disposition header for attachment downloads
+        // Check Content-Disposition header for attachment downloads.
+        // Use .download to convert the in-progress navigation into a
+        // WKDownload, avoiding a duplicate HTTP request that would fail
+        // for one-time download tokens (signed URLs, etc.).
         if let contentDisposition = response.value(forHTTPHeaderField: "Content-Disposition"),
            contentDisposition.lowercased().contains("attachment") {
-            let filename = extractFilename(from: contentDisposition) ?? url.lastPathComponent
-            Task { @MainActor in
-                downloadManager?.startDownload(url: url, suggestedFilename: filename)
-            }
-            decisionHandler(.cancel)
+            pendingDownloadFilename = extractFilename(from: contentDisposition) ?? url.lastPathComponent
+            decisionHandler(.download)
             return
         }
 
@@ -246,16 +247,31 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
                 "application/vnd.openxmlformats-officedocument.presentationml.presentation",
             ]
             if nonRenderableMIME.contains(mimeType) {
-                let filename = url.lastPathComponent
-                Task { @MainActor in
-                    downloadManager?.startDownload(url: url, suggestedFilename: filename)
-                }
-                decisionHandler(.cancel)
+                pendingDownloadFilename = url.lastPathComponent
+                decisionHandler(.download)
                 return
             }
         }
 
         decisionHandler(.allow)
+    }
+
+    // MARK: - WKDownload Handling
+
+    func webView(
+        _ webView: WKWebView,
+        navigationResponse: WKNavigationResponse,
+        didBecomeDownload download: WKDownload
+    ) {
+        download.delegate = self
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        navigationAction: WKNavigationAction,
+        didBecomeDownload download: WKDownload
+    ) {
+        download.delegate = self
     }
 
     private func extractFilename(from contentDisposition: String) -> String? {
@@ -304,6 +320,54 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         completionHandler: @escaping (Bool) -> Void
     ) {
         completionHandler(true)
+    }
+}
+
+// MARK: - WKDownloadDelegate
+
+extension WebViewCoordinator: WKDownloadDelegate {
+    func download(
+        _ download: WKDownload,
+        decideDestinationUsing response: URLResponse,
+        suggestedFilename: String,
+        completionHandler: @escaping (URL?) -> Void
+    ) {
+        let filename = pendingDownloadFilename ?? suggestedFilename
+        pendingDownloadFilename = nil
+
+        let destinationURL = DownloadManager.computeUniqueFilename(for: filename)
+
+        // Track in DownloadManager for progress UI
+        Task { @MainActor in
+            downloadManager?.startWKDownload(
+                download,
+                url: response.url ?? URL(string: "about:blank")!,
+                suggestedFilename: filename,
+                destinationURL: destinationURL
+            )
+        }
+
+        completionHandler(destinationURL)
+    }
+
+    func download(
+        _ download: WKDownload,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        completionHandler(.performDefaultHandling, nil)
+    }
+
+    func downloadDidFinish(_ download: WKDownload) {
+        Task { @MainActor in
+            downloadManager?.wkDownloadDidFinish(download)
+        }
+    }
+
+    func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+        Task { @MainActor in
+            downloadManager?.wkDownloadDidFail(download, error: error)
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 import UniformTypeIdentifiers
+import WebKit
 
 /// Represents a single download task with progress tracking.
 @MainActor
@@ -176,7 +177,9 @@ final class DownloadManager: NSObject, ObservableObject {
     @Published var latestDownloadItem: DownloadItem?
 
     private var urlSession: URLSession!
-    private var downloadTasks: [URLSessionDownloadTask: DownloadItem] = [:]
+    private var downloadTasks: [URLSessionDownloadTask: DownloadItem] = []
+    private var wkDownloadItems: [WKDownload: DownloadItem] = []
+    private var wkDownloadDestinations: [WKDownload: URL] = []
 
     static let downloadsDirectory: URL = {
         let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -195,7 +198,7 @@ final class DownloadManager: NSObject, ObservableObject {
         loadSavedDownloads()
     }
 
-    // MARK: - Start Download
+    // MARK: - Start Download (URLSession-based, for extension-triggered)
 
     func startDownload(url: URL, suggestedFilename: String? = nil) {
         let filename = suggestedFilename ?? url.lastPathComponent
@@ -209,6 +212,43 @@ final class DownloadManager: NSObject, ObservableObject {
         let task = urlSession.downloadTask(with: url)
         downloadTasks[task] = item
         task.resume()
+    }
+
+    // MARK: - WKDownload Integration (for response-triggered downloads)
+
+    func startWKDownload(_ download: WKDownload, url: URL, suggestedFilename: String, destinationURL: URL) {
+        let item = DownloadItem(url: url, suggestedFilename: suggestedFilename)
+        downloads.insert(item, at: 0)
+        activeDownloadCount += 1
+        latestDownloadItem = item
+        showDownloadAlert = true
+
+        wkDownloadItems[download] = item
+        wkDownloadDestinations[download] = destinationURL
+    }
+
+    func wkDownloadDidFinish(_ download: WKDownload) {
+        guard let item = wkDownloadItems.removeValue(forKey: download),
+              let destinationURL = wkDownloadDestinations.removeValue(forKey: download) else { return }
+        item.localFileURL = destinationURL
+        item.status = .completed
+        item.progress = 1.0
+        item.mimeType = download.response?.mimeType
+        if let attrs = try? FileManager.default.attributesOfItem(atPath: destinationURL.path),
+           let fileSize = attrs[.size] as? Int64 {
+            item.totalBytes = fileSize
+            item.downloadedBytes = fileSize
+        }
+        activeDownloadCount = max(0, activeDownloadCount - 1)
+        saveDownloadHistory()
+    }
+
+    func wkDownloadDidFail(_ download: WKDownload, error: Error) {
+        guard let item = wkDownloadItems.removeValue(forKey: download) else { return }
+        wkDownloadDestinations.removeValue(forKey: download)
+        item.status = .failed
+        item.error = error.localizedDescription
+        activeDownloadCount = max(0, activeDownloadCount - 1)
     }
 
     // MARK: - Cancel Download
@@ -308,6 +348,11 @@ final class DownloadManager: NSObject, ObservableObject {
             item.localFileURL = localURL
             item.mimeType = entry["mimeType"]
             item.progress = 1.0
+            if let attrs = try? FileManager.default.attributesOfItem(atPath: localURL.path),
+               let fileSize = attrs[.size] as? Int64 {
+                item.totalBytes = fileSize
+                item.downloadedBytes = fileSize
+            }
             downloads.append(item)
         }
     }
