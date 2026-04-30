@@ -1,10 +1,11 @@
 import SwiftUI
 import WebKit
 
-/// UIViewRepresentable wrapper for WKWebView with ad-blocking support.
+/// UIViewRepresentable wrapper for WKWebView with ad-blocking and download support.
 struct WebViewRepresentable: UIViewRepresentable {
     @ObservedObject var viewModel: BrowserViewModel
     @EnvironmentObject var adBlockManager: AdBlockManager
+    var downloadManager: DownloadManager?
 
     let isIncognito: Bool
 
@@ -61,7 +62,7 @@ struct WebViewRepresentable: UIViewRepresentable {
     }
 
     func makeCoordinator() -> WebViewCoordinator {
-        WebViewCoordinator(viewModel: viewModel, adBlockManager: adBlockManager)
+        WebViewCoordinator(viewModel: viewModel, adBlockManager: adBlockManager, downloadManager: downloadManager)
     }
 
     private func buildUserAgent(webView: WKWebView) -> String {
@@ -78,11 +79,25 @@ struct WebViewRepresentable: UIViewRepresentable {
 final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
     let viewModel: BrowserViewModel
     let adBlockManager: AdBlockManager
+    let downloadManager: DownloadManager?
     private var observations: [NSKeyValueObservation] = []
+    var pendingDownloadFilename: String?
 
-    init(viewModel: BrowserViewModel, adBlockManager: AdBlockManager) {
+    /// File extensions that trigger a download instead of navigation.
+    /// Excludes web-renderable types (pdf, txt, json, xml, csv, images) that
+    /// WKWebView can display inline.
+    private static let downloadExtensions: Set<String> = [
+        "zip", "rar", "7z", "tar", "gz", "bz2", "xz",
+        "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+        "mp3", "m4a", "aac", "wav", "flac", "ogg",
+        "dmg", "iso", "apk", "ipa",
+        "epub", "mobi",
+    ]
+
+    init(viewModel: BrowserViewModel, adBlockManager: AdBlockManager, downloadManager: DownloadManager?) {
         self.viewModel = viewModel
         self.adBlockManager = adBlockManager
+        self.downloadManager = downloadManager
     }
 
     func observeWebView(_ webView: WKWebView) {
@@ -178,7 +193,99 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
             return
         }
 
+        // Check if URL is a downloadable file — convert to WKDownload
+        // to avoid a duplicate HTTP request (preserves cookies & signed URLs)
+        let pathExtension = url.pathExtension.lowercased()
+        if !pathExtension.isEmpty && Self.downloadExtensions.contains(pathExtension) {
+            pendingDownloadFilename = url.lastPathComponent
+            decisionHandler(.download)
+            return
+        }
+
         decisionHandler(.allow)
+    }
+
+    // MARK: - Download Navigation Response
+
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationResponse: WKNavigationResponse,
+        decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+    ) {
+        guard let response = navigationResponse.response as? HTTPURLResponse,
+              let url = response.url else {
+            decisionHandler(.allow)
+            return
+        }
+
+        // Check Content-Disposition header for attachment downloads.
+        // Use .download to convert the in-progress navigation into a
+        // WKDownload, avoiding a duplicate HTTP request that would fail
+        // for one-time download tokens (signed URLs, etc.).
+        if let contentDisposition = response.value(forHTTPHeaderField: "Content-Disposition"),
+           contentDisposition.lowercased().contains("attachment") {
+            pendingDownloadFilename = extractFilename(from: contentDisposition) ?? url.lastPathComponent
+            decisionHandler(.download)
+            return
+        }
+
+        // Check MIME type for non-renderable content
+        if let mimeType = response.mimeType {
+            let nonRenderableMIME = [
+                "application/octet-stream",
+                "application/zip",
+                "application/x-rar-compressed",
+                "application/x-7z-compressed",
+                "application/x-tar",
+                "application/gzip",
+                "application/vnd.ms-excel",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/vnd.ms-powerpoint",
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            ]
+            if nonRenderableMIME.contains(mimeType) {
+                pendingDownloadFilename = url.lastPathComponent
+                decisionHandler(.download)
+                return
+            }
+        }
+
+        decisionHandler(.allow)
+    }
+
+    // MARK: - WKDownload Handling
+
+    func webView(
+        _ webView: WKWebView,
+        navigationResponse: WKNavigationResponse,
+        didBecomeDownload download: WKDownload
+    ) {
+        download.delegate = self
+    }
+
+    func webView(
+        _ webView: WKWebView,
+        navigationAction: WKNavigationAction,
+        didBecomeDownload download: WKDownload
+    ) {
+        download.delegate = self
+    }
+
+    private func extractFilename(from contentDisposition: String) -> String? {
+        // Parse filename from Content-Disposition: attachment; filename="file.pdf"
+        let components = contentDisposition.components(separatedBy: ";")
+        for component in components {
+            let trimmed = component.trimmingCharacters(in: .whitespaces)
+            if trimmed.lowercased().hasPrefix("filename=") {
+                let parts = trimmed.components(separatedBy: "=")
+                if parts.count >= 2 {
+                    return parts.dropFirst().joined(separator: "=").trimmingCharacters(in: CharacterSet(charactersIn: "\"' "))
+                }
+            }
+        }
+        return nil
     }
 
     // MARK: - WKUIDelegate
@@ -212,6 +319,54 @@ final class WebViewCoordinator: NSObject, WKNavigationDelegate, WKUIDelegate {
         completionHandler: @escaping (Bool) -> Void
     ) {
         completionHandler(true)
+    }
+}
+
+// MARK: - WKDownloadDelegate
+
+extension WebViewCoordinator: WKDownloadDelegate {
+    func download(
+        _ download: WKDownload,
+        decideDestinationUsing response: URLResponse,
+        suggestedFilename: String,
+        completionHandler: @escaping (URL?) -> Void
+    ) {
+        let filename = pendingDownloadFilename ?? suggestedFilename
+        pendingDownloadFilename = nil
+
+        let destinationURL = DownloadManager.computeUniqueFilename(for: filename)
+
+        // Track in DownloadManager for progress UI
+        Task { @MainActor in
+            downloadManager?.startWKDownload(
+                download,
+                url: response.url ?? URL(string: "about:blank")!,
+                suggestedFilename: filename,
+                destinationURL: destinationURL
+            )
+        }
+
+        completionHandler(destinationURL)
+    }
+
+    func download(
+        _ download: WKDownload,
+        didReceive challenge: URLAuthenticationChallenge,
+        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
+    ) {
+        completionHandler(.performDefaultHandling, nil)
+    }
+
+    func downloadDidFinish(_ download: WKDownload) {
+        Task { @MainActor in
+            downloadManager?.wkDownloadDidFinish(download)
+        }
+    }
+
+    func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+        Task { @MainActor in
+            downloadManager?.wkDownloadDidFail(download, error: error)
+        }
     }
 }
 
