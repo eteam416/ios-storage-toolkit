@@ -84,13 +84,13 @@ struct MainBrowserView: View {
                             }
                             .padding(.bottom, AegisSpacing.xs)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
-                            .onAppear {
-                                // Auto-hide after 5 seconds if completed
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-                                    if item.status == .completed {
-                                        withAnimation {
-                                            downloadManager.showDownloadAlert = false
-                                        }
+                            .task(id: item.id) {
+                                // Auto-hide after 5 seconds if completed.
+                                // task(id:) cancels and restarts when item changes.
+                                try? await Task.sleep(for: .seconds(5))
+                                if item.status == .completed {
+                                    withAnimation {
+                                        downloadManager.showDownloadAlert = false
                                     }
                                 }
                             }

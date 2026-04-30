@@ -262,11 +262,22 @@ final class DownloadManager: NSObject, ObservableObject {
 
     private func saveDownloadHistory() {
         let completed = downloads.filter { $0.status == .completed && $0.localFileURL != nil }
-        let entries: [[String: String]] = completed.map {
-            [
+        let downloadsDir = Self.downloadsDirectory.path
+        let entries: [[String: String]] = completed.compactMap {
+            guard let fullPath = $0.localFileURL?.path else { return nil }
+            // Store path relative to downloads directory so it survives
+            // container UUID changes across app relaunches on iOS.
+            let relativePath: String
+            if fullPath.hasPrefix(downloadsDir) {
+                relativePath = String(fullPath.dropFirst(downloadsDir.count))
+                    .trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            } else {
+                relativePath = $0.localFileURL?.lastPathComponent ?? ""
+            }
+            return [
                 "url": $0.url.absoluteString,
                 "filename": $0.suggestedFilename,
-                "localPath": $0.localFileURL?.path ?? "",
+                "relativePath": relativePath,
                 "mimeType": $0.mimeType ?? "",
             ]
         }
@@ -278,10 +289,18 @@ final class DownloadManager: NSObject, ObservableObject {
 
         for entry in entries {
             guard let urlString = entry["url"], let url = URL(string: urlString),
-                  let filename = entry["filename"],
-                  let localPath = entry["localPath"], !localPath.isEmpty else { continue }
+                  let filename = entry["filename"] else { continue }
 
-            let localURL = URL(fileURLWithPath: localPath)
+            // Support both old absolute paths and new relative paths
+            let localURL: URL
+            if let relativePath = entry["relativePath"], !relativePath.isEmpty {
+                localURL = Self.downloadsDirectory.appendingPathComponent(relativePath)
+            } else if let localPath = entry["localPath"], !localPath.isEmpty {
+                localURL = URL(fileURLWithPath: localPath)
+            } else {
+                continue
+            }
+
             guard FileManager.default.fileExists(atPath: localURL.path) else { continue }
 
             let item = DownloadItem(url: url, suggestedFilename: filename)
