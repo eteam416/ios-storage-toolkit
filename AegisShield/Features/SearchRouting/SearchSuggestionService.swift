@@ -72,7 +72,7 @@ final class SearchSuggestionService: ObservableObject {
 
     /// Returns the autocomplete API URL for each engine.
     private func suggestionURL(for query: String, engine: SearchEngine) -> String {
-        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed.subtracting(CharacterSet(charactersIn: "&=+"))) ?? query
         let lang = Locale.current.language.languageCode?.identifier ?? "en"
 
         switch engine.id {
